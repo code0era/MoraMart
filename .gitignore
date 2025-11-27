@@ -1,0 +1,9 @@
+# Node modules (always ignore)
+node_modules/
+
+# Environment variables (API keys, passwords)
+.env
+.env.local
+.env.*.local
+
+.vscode
