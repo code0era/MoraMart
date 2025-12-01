@@ -1,4 +1,6 @@
 import { redis } from "../lib/redis.js";
+import cloudinary from "../lib/cloudinary.js";
+
 import Product from "../models/product.model.js"
 
 export const getAllProducts  = async(req,res)=>{
@@ -122,8 +124,8 @@ export const toggleFeaturedProduct= async (req, res)=>{
         if(product){
             product.isFeatured =!product.isFeatured;
             const updatedProduct = await product.save() ;
-            await updateFeaturedProdeuctsCache();
-            res.json(updateProduct);
+            await updateFeaturedProductsCache();
+            res.json(updatedProduct);
            }else{
             res.status(401).json({message: "Product not found"});
            }
@@ -131,10 +133,11 @@ export const toggleFeaturedProduct= async (req, res)=>{
 
     }
 }
-async function updateFeaturedProdeuctsCache(){
+async function updateFeaturedProductsCache()
+{
     try {
         const  featuredProducts = await Product.find({isFeatured:true}).lean();
-        await redis.set("featured_products" , JSON.stringify(featuresProducts));
+        await redis.set("featured_products" , JSON.stringify(featuredProducts));
 
     } catch (error) {
         console.log("error in update cache function ")  ;      
