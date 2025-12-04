@@ -1,7 +1,6 @@
 import { create } from "zustand";
 
 import toast from "react-hot-toast";
-import axios from "axios";
 import axiosInstance from "../lib/axios.js"; // ✅ FIX: use axiosInstance
 
 export const useProductStore = create((set) => ({
@@ -34,7 +33,9 @@ export const useProductStore = create((set) => ({
   fetchProductsByCategory: async (category) => {
     set({ loading: true });
     try {
-      const response = await axiosInstance.get(`/products/category/${category}`);
+      const response = await axiosInstance.get(
+        `/products/category/${category}`
+      );
       set({ products: response.data, loading: false });
     } catch (error) {
       set({ error: "Failed to fetch products", loading: false });
@@ -58,22 +59,29 @@ export const useProductStore = create((set) => ({
   },
   toggleFeaturedProduct: async (productId) => {
     set({ loading: true });
-
     try {
       const res = await axiosInstance.patch(`/products/${productId}`);
 
-      // IMPORTANT → updater receives the previous state object
       set((state) => ({
         products: state.products.map((product) =>
-          product._id === productId
-            ? { ...product, isFeatured: res.data.isFeatured }
-            : product
+          product._id === productId ? res.data.product : product
         ),
         loading: false,
       }));
     } catch (error) {
       set({ loading: false });
       toast.error(error?.response?.data?.error || "Failed to update product");
+    }
+  },
+
+  fetchFeaturedProducts: async () => {
+    set({ loading: true });
+    try {
+      const response = await axiosInstance.get("/products/featured");
+      set({ products: response.data, loading: false });
+    } catch (error) {
+      set({ error: "Failed to fetch products", loading: false });
+      console.log("Error fetching featured products:", error);
     }
   },
 }));

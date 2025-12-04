@@ -7,6 +7,31 @@ export const useCartStore = create((set, get) => ({
   total: 0,
   subtotal: 0,
   isCouponApplied: false,
+  getMyCoupon: async () => {
+    try {
+      const response = await axiosInstance.get('/coupons');
+      set({coupon :response.data});   
+    } catch (error) {
+      console.log("Error fetching coupon" ,error);
+    }
+  },
+  applyCoupon :async(code)=>{
+    try {
+      const response = await axiosInstance.post("/coupons/validate", {code});
+      set({coupon:response.data,isCouponApplied:true});
+      get().calculateTotals();
+      toast.success("Coupon applied successfully");
+
+    } catch (error) {
+      toast.error(error.resoponse?.data?.message || "Failed to apply coupon");
+    }
+  },
+  removeCoupon: ()=>{
+    set({coupon: null, isCouponApplied:false});
+    get().calculateTotals;
+    toast.success("Coupon removed");
+    },
+    
 
   getCartItems: async () => {
     try {
@@ -17,6 +42,9 @@ export const useCartStore = create((set, get) => ({
       set({ cart: [] });
       toast.error(error.response.data.message || "An error occurred");
     }
+  },
+  clearCart: async () => {
+    set({ cart: [], coupon: null, total: 0, subtotal: 0 });
   },
 
   addToCart: async (product) => {
@@ -58,7 +86,7 @@ export const useCartStore = create((set, get) => ({
     await axiosInstance.put(`/cart/${productId}`, { quantity });
     set((prevState) => ({
       cart: prevState.cart.map((item) =>
-        item._id === productId ? { ...item,quantity } : item
+        item._id === productId ? { ...item, quantity } : item
       ),
     }));
     get().calculateTotals();
