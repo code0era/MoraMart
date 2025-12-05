@@ -34,9 +34,11 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
-// Serve frontend in production
+// --- SERVE FRONTEND IN PRODUCTION ---
 if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "frontend", "dist");
+  // We use ".." to go up one level from 'backend' to root, then into 'frontend'
+  const frontendPath = path.join(__dirname, "../frontend/dist");
+
   app.use(express.static(frontendPath));
 
   app.get("*", (req, res) => {
