@@ -4,6 +4,9 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// You will also need to add 'import cors from "cors";' if you did not already, 
+// and configure it (not strictly needed for Option B, but good practice).
+
 import authRoutes from "./routes/auth.route.js";
 import productRoutes from "./routes/product.route.js";
 import cartRoutes from "./routes/cart.route.js";
@@ -34,20 +37,27 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
-// --- SERVE FRONTEND IN PRODUCTION ---
+// --- CORRECTED FRONTEND SERVING BLOCK ---
 if (process.env.NODE_ENV === "production") {
-  // We use ".." to go up one level from 'backend' to root, then into 'frontend'
-  const frontendPath = path.join(__dirname, "../frontend/dist");
+    // 1. Use path.resolve() for absolute path reliability
+    const frontendPath = path.resolve(__dirname, "../frontend", "dist");
 
-  app.use(express.static(frontendPath));
+    // Serve static assets from the built frontend directory
+    app.use(express.static(frontendPath));
 
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
-  });
+    // 2. Use a fallback middleware instead of app.get("*") to prevent PathError
+    app.use((req, res, next) => {
+        // Only serve index.html if the request is NOT for an API route
+        if (!req.path.startsWith("/api")) {
+            res.sendFile(path.join(frontendPath, "index.html"));
+        } else {
+            next(); // Let Express handle the request (e.g., 404 for non-existent API routes)
+        }
+    });
 }
 
 // Start server
 app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
-  await connectDB();
+    console.log(`Server running on port ${PORT}`);
+    await connectDB();
 });
