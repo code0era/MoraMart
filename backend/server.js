@@ -29,6 +29,9 @@ const __dirname = path.dirname(__filename);
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
+
+
+
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
